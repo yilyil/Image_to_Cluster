@@ -186,7 +186,6 @@ pkill -f "port-forward"
 ## 🎯 Séquence 3 : Exercice principal
 
 **Objectif :** Customiser une image Docker avec Packer et déployer sur K3d via Ansible  
-**Difficulté :** Moyen/Difficile (~2h avec approche manuelle, ~5 min avec automatisation)
 
 ### Mission
 

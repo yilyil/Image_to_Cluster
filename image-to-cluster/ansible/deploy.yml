@@ -33,7 +33,7 @@
         msg: "{{ nodes_output.stdout_lines }}"
 
     - name: Vérification de l'image Docker localement
-      ansible.builtin.command: docker images {{ image_name }}:{{ image_tag }} --format "{{`{{.Repository}}:{{.Tag}}`}}"
+      ansible.builtin.shell: docker images {{ image_name }}:{{ image_tag }} --format "{{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}"
       register: image_check
       changed_when: false
       failed_when: image_check.stdout == ""

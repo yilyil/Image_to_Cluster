@@ -1,186 +1,62 @@
-.PHONY: help check-deps install-deps create-cluster delete-cluster build-image import-image deploy undeploy forward-port status clean all
+.PHONY: help install-deps create-cluster delete-cluster build-image import-image deploy status all
 
-# Variables
-IMAGE_NAME := custom-nginx
-IMAGE_TAG := latest
-CLUSTER_NAME := lab
-CLUSTER_SERVERS := 1
-CLUSTER_AGENTS := 2
-PORT := 8080
-SERVICE_PORT := 80
-
-# Couleurs
-GREEN := \033[0;32m
+GREEN  := \033[0;32m
 YELLOW := \033[1;33m
-RED := \033[0;31m
-NC := \033[0m
+RED    := \033[0;31m
+NC     := \033[0m
 
-##@ Aide
+all: install-deps create-cluster build-image import-image deploy status
 
-help: ## Affiche ce message d'aide
-	@echo "=========================================="
-	@echo "📚 Makefile - Atelier Image to Cluster"
-	@echo "=========================================="
-	@echo ""
-	@awk 'BEGIN {FS = ":.*##"; printf "Usage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-
-##@ Installation et Vérification
-
-check-deps: ## Vérifie que toutes les dépendances sont installées
-	@echo "$(GREEN)🔍 Vérification des dépendances...$(NC)"
-	@bash scripts/check-deps.sh
-
-install-deps: ## Installe les dépendances manquantes (Packer, K3d, Ansible)
-	@echo "$(GREEN)📦 Installation des dépendances...$(NC)"
-	@echo ""
-	@echo "Installation de Packer..."
-	@if ! command -v packer &> /dev/null; then \
-		wget -q https://releases.hashicorp.com/packer/1.10.0/packer_1.10.0_linux_amd64.zip && \
-		unzip -q packer_1.10.0_linux_amd64.zip -d /tmp/ && \
-		sudo mv /tmp/packer /usr/local/bin/ && \
-		rm -f packer_1.10.0_linux_amd64.zip && \
-		echo "✅ Packer installé"; \
+install-deps:
+	@echo "$(GREEN)📦 Installation automatique des dépendances...$(NC)"
+	@if ! command -v packer-bin &> /dev/null; then \
+		echo "Installation de Packer..."; \
+		wget -q https://releases.hashicorp.com/packer/1.10.0/packer_1.10.0_linux_amd64.zip -O /tmp/packer.zip && \
+		unzip -o -q /tmp/packer.zip -d /tmp/ && \
+		sudo mv /tmp/packer /usr/local/bin/packer-bin && \
+		sudo chmod +x /usr/local/bin/packer-bin && \
+		rm -f /tmp/packer.zip && echo "✅ Packer installé"; \
 	else \
-		echo "✅ Packer déjà installé"; \
+		echo "✅ Packer-bin déjà présent"; \
 	fi
-	@echo ""
-	@echo "Installation de K3d..."
 	@if ! command -v k3d &> /dev/null; then \
-		curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash && \
-		echo "✅ K3d installé"; \
+		echo "Installation de K3d..."; \
+		curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash; \
 	else \
-		echo "✅ K3d déjà installé"; \
+		echo "✅ K3d déjà présent"; \
 	fi
-	@echo ""
-	@echo "Installation d'Ansible..."
 	@if ! command -v ansible &> /dev/null; then \
+		echo "Installation d'Ansible..."; \
 		pip install --quiet ansible && \
+		ansible-galaxy collection install kubernetes.core && \
 		echo "✅ Ansible installé"; \
 	else \
-		echo "✅ Ansible déjà installé"; \
+		echo "✅ Ansible déjà présent"; \
 	fi
-	@echo ""
-	@echo "$(GREEN)✅ Toutes les dépendances sont installées !$(NC)"
 
-##@ Cluster Kubernetes
-
-create-cluster: ## Crée le cluster K3d (1 master + 2 workers)
-	@echo "$(GREEN)☸️  Création du cluster K3d...$(NC)"
-	@if k3d cluster list 2>/dev/null | grep -q "$(CLUSTER_NAME)"; then \
-		echo "$(YELLOW)⚠️  Le cluster $(CLUSTER_NAME) existe déjà$(NC)"; \
+create-cluster:
+	@echo "$(GREEN)☸️ Création du cluster K3d...$(NC)"
+	@if k3d cluster get lab >/dev/null 2>&1; then \
+		echo "$(YELLOW)⚠️ Le cluster lab existe déjà$(NC)"; \
 	else \
-		k3d cluster create $(CLUSTER_NAME) \
-			--servers $(CLUSTER_SERVERS) \
-			--agents $(CLUSTER_AGENTS) \
-			--port "$(PORT):30080@server:0" && \
-		echo "" && \
-		echo "$(GREEN)✅ Cluster créé avec succès !$(NC)" && \
-		echo "" && \
-		kubectl get nodes; \
+		k3d cluster create lab --servers 1 --agents 2 --port "8080:30080@server:0"; \
 	fi
 
-delete-cluster: ## Supprime le cluster K3d
-	@echo "$(RED)🗑️  Suppression du cluster K3d...$(NC)"
-	@k3d cluster delete $(CLUSTER_NAME) 2>/dev/null || true
-	@echo "$(GREEN)✅ Cluster supprimé$(NC)"
+build-image:
+	@echo "$(GREEN)🐳 Build Packer...$(NC)"
+	@cd packer && packer-bin init nginx.pkr.hcl && packer-bin build nginx.pkr.hcl
 
-##@ Build et Import de l'Image
+import-image:
+	@echo "$(GREEN)📦 Import K3d...$(NC)"
+	@k3d image import custom-nginx:latest -c lab
 
-build-image: ## Construit l'image Docker personnalisée avec Packer ou Docker
-	@echo "$(GREEN)🐳 Build de l'image...$(NC)"
-	@if command -v packer &> /dev/null; then \
-		cd packer && \
-		(packer init nginx.pkr.hcl 2>/dev/null || true) && \
-		packer build -var "image_name=$(IMAGE_NAME)" -var "image_tag=$(IMAGE_TAG)" nginx.pkr.hcl 2>/dev/null || \
-		(echo "$(YELLOW)⚠️ Packer a échoué, utilisation de Docker...$(NC)" && \
-		 cd .. && \
-		 docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -f - . << 'DOCKERFILE' \
-FROM nginx:alpine\
-COPY index.html /usr/share/nginx/html/index.html\
-EXPOSE 80\
-CMD ["nginx", "-g", "daemon off;"]\
-DOCKERFILE\
-		); \
-	else \
-		docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -f - . << 'DOCKERFILE' \
-FROM nginx:alpine\
-COPY index.html /usr/share/nginx/html/index.html\
-EXPOSE 80\
-CMD ["nginx", "-g", "daemon off;"]\
-DOCKERFILE\
-	fi
-	@echo ""
-	@echo "$(GREEN)✅ Image construite avec succès !$(NC)"
-	@echo ""
-	@docker images $(IMAGE_NAME)
-
-import-image: ## Importe l'image dans le cluster K3d
-	@echo "$(GREEN)📦 Import de l'image dans K3d...$(NC)"
-	@bash scripts/import-image.sh $(IMAGE_NAME) $(IMAGE_TAG) $(CLUSTER_NAME)
-	@echo "$(GREEN)✅ Image importée$(NC)"
-
-##@ Déploiement
-
-deploy: ## Déploie l'application sur K3d avec Ansible
-	@echo "$(GREEN)🚀 Déploiement de l'application avec Ansible...$(NC)"
+deploy:
+	@echo "$(GREEN)🚀 Déploiement Ansible...$(NC)"
+	@mkdir -p ansible
+	@printf "[local]\nlocalhost ansible_connection=local\n" > ansible/inventory.ini
 	@cd ansible && ansible-playbook -i inventory.ini deploy.yml
-	@echo ""
-	@echo "$(GREEN)=========================================="
-	@echo "✅ Déploiement terminé !"
-	@echo "==========================================$(NC)"
 
-undeploy: ## Supprime le déploiement de l'application
-	@echo "$(RED)🗑️  Suppression du déploiement...$(NC)"
-	@kubectl delete deployment custom-nginx --ignore-not-found=true
-	@kubectl delete service custom-nginx --ignore-not-found=true
-	@echo "$(GREEN)✅ Application supprimée$(NC)"
-
-##@ Accès à l'Application
-
-forward-port: ## Forward le port pour accéder à l'application
-	@echo "$(GREEN)🌐 Forwarding du port $(PORT) vers le service...$(NC)"
-	@echo "$(YELLOW)💡 Dans GitHub Codespaces: Allez dans PORTS et rendez public le port $(PORT)$(NC)"
-	@echo "$(YELLOW)Press Ctrl+C to stop$(NC)"
-	@kubectl port-forward svc/custom-nginx $(PORT):$(SERVICE_PORT)
-
-status: ## Affiche l'état du cluster et de l'application
-	@echo "$(GREEN)=========================================="
-	@echo "📊 État du Cluster et de l'Application"
-	@echo "==========================================$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Nœuds du cluster:$(NC)"
+status:
+	@echo "$(GREEN)📊 État du déploiement :$(NC)"
 	@kubectl get nodes
-	@echo ""
-	@echo "$(YELLOW)Pods:$(NC)"
-	@kubectl get pods -l app=custom-nginx
-	@echo ""
-	@echo "$(YELLOW)Services:$(NC)"
-	@kubectl get svc custom-nginx
-	@echo ""
-	@echo "$(YELLOW)Deployments:$(NC)"
-	@kubectl get deployment custom-nginx
-	@echo ""
-
-##@ Nettoyage
-
-clean: ## Nettoie tout (cluster + images Docker)
-	@echo "$(RED)🧹 Nettoyage complet...$(NC)"
-	@make undeploy 2>/dev/null || true
-	@make delete-cluster 2>/dev/null || true
-	@docker rmi $(IMAGE_NAME):$(IMAGE_TAG) 2>/dev/null || true
-	@echo "$(GREEN)✅ Nettoyage terminé$(NC)"
-
-##@ Pipeline Complet
-
-all: install-deps create-cluster build-image import-image deploy status ## Pipeline complet automatique
-	@echo ""
-	@echo "$(GREEN)=========================================="
-	@echo "🎉 Pipeline complet terminé avec succès !"
-	@echo "==========================================$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Pour accéder à l'application:$(NC)"
-	@echo "1. Exécutez: make forward-port"
-	@echo "2. Dans GitHub Codespaces, allez dans PORTS"
-	@echo "3. Rendez public le port $(PORT)"
-	@echo "4. Cliquez sur l'URL"
-	@echo ""
+	@kubectl get pods

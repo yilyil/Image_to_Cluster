@@ -158,7 +158,7 @@ clean: ## Nettoie tout (cluster + images Docker)
 
 ##@ Pipeline Complet
 
-all: check-deps create-cluster build-image import-image deploy status ## Pipeline complet: création cluster → build → import → deploy
+all: install-deps create-cluster build-image import-image deploy status ## Pipeline complet: installation → création cluster → build → import → deploy
 	@echo ""
 	@echo "$(GREEN)=========================================="
 	@echo "🎉 Pipeline complet terminé avec succès !"

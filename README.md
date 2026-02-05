@@ -97,7 +97,6 @@ L'objectif est de comprendre comment des outils d'Infrastructure as Code permett
 ## 📝 Séquence 1 : Création du Codespace GitHub
 
 **Objectif :** Création d'un Codespace GitHub  
-**Difficulté :** Très facile (~5 minutes)
 
 ### Étapes
 
@@ -120,7 +119,6 @@ L'objectif est de comprendre comment des outils d'Infrastructure as Code permett
 ## 🔧 Séquence 2 : Création du cluster K3d
 
 **Objectif :** Créer votre cluster Kubernetes K3d  
-**Difficulté :** Simple (~5 minutes)
 
 Vous allez dans cette séquence mettre en place un cluster Kubernetes K3d contenant **1 master et 2 workers**.
 
@@ -285,7 +283,6 @@ kubectl port-forward svc/custom-nginx 3000:80
 ## 📚 Séquence 4 : Documentation
 
 **Objectif :** Compléter et documenter le README.md  
-**Difficulté :** Facile (~30 minutes)
 
 Ce README a été conçu pour être **complet, pédagogique et professionnel**. Il inclut :
 

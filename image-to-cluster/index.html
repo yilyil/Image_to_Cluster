@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atelier Image to Cluster - Yilizire</title>
+    <title>Image to Cluster - Success</title>
     <style>
         * {
             margin: 0;
@@ -13,135 +13,181 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1a2e;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            overflow: hidden;
+            position: relative;
         }
-        
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23667eea' fill-opacity='0.3'/%3E%3C/svg%3E");
+            animation: wave 10s linear infinite;
+            z-index: 1;
+        }
+
+        .wave:nth-child(2) {
+            bottom: 10px;
+            animation: wave 7s linear infinite;
+            opacity: 0.5;
+        }
+
+        .wave:nth-child(3) {
+            bottom: 20px;
+            animation: wave 13s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1200px; }
+        }
+
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 50px;
-            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 60px;
+            max-width: 700px;
             text-align: center;
-            animation: fadeIn 1s ease-in;
+            z-index: 10;
+            position: relative;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .checkmark {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: #4bb543;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0 0 0 #4bb543;
+            animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
         }
-        
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: #4bb543;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+        @keyframes fill {
+            100% { box-shadow: inset 0 0 0 50px #4bb543; }
+        }
+
         h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        
-        .badge {
-            display: inline-block;
-            background: #667eea;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            margin: 10px 5px;
-            font-size: 0.9em;
-            font-weight: bold;
+            font-size: 3em;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
         }
-        
-        .tech-stack {
-            margin: 30px 0;
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #667eea; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #764ba2, 0 0 40px #764ba2; }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .tech-icons {
             display: flex;
             justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 30px;
+            margin: 40px 0;
         }
-        
-        .tech-item {
-            background: #f7f7f7;
-            padding: 15px 25px;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
+
+        .tech-icon {
+            font-size: 50px;
+            animation: float 3s ease-in-out infinite;
         }
-        
-        .info {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f0f4ff;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
+
+        .tech-icon:nth-child(2) { animation-delay: 0.5s; }
+        .tech-icon:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
-        
-        .success {
-            color: #27ae60;
-            font-size: 1.2em;
+
+        .status-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            display: inline-block;
             margin-top: 20px;
-            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+            animation: pulse-badge 2s infinite;
         }
-        
-        .footer {
-            margin-top: 40px;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        code {
-            background: #2d3748;
-            color: #48bb78;
-            padding: 2px 8px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
     </style>
 </head>
 <body>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+
     <div class="container">
-        <h1>🚀 Atelier Image to Cluster</h1>
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+
+        <h1>Déploiement Réussi !</h1>
         
-        <div class="badge">EFREI Paris - M2 Security & Networks</div>
-        <div class="badge">Yilizire - 2026</div>
-        
-        <div class="info">
-            <p><strong>Objectif atteint !</strong></p>
-            <p>Cette application Nginx personnalisée a été déployée avec succès sur un cluster K3d en utilisant une approche Infrastructure as Code.</p>
+        <div class="subtitle">
+            Infrastructure as Code ✨
         </div>
-        
-        <div class="tech-stack">
-            <div class="tech-item">
-                <strong>🐳 Packer</strong><br>
-                <small>Build d'image Docker</small>
-            </div>
-            <div class="tech-item">
-                <strong>🔧 Ansible</strong><br>
-                <small>Déploiement automatisé</small>
-            </div>
-            <div class="tech-item">
-                <strong>☸️ K3d</strong><br>
-                <small>Cluster Kubernetes</small>
-            </div>
-            <div class="tech-item">
-                <strong>📦 GitHub Codespaces</strong><br>
-                <small>Environnement dev</small>
-            </div>
+
+        <div class="tech-icons">
+            <div class="tech-icon">🐳</div>
+            <div class="tech-icon">⚙️</div>
+            <div class="tech-icon">☸️</div>
         </div>
-        
-        <div class="success">
-            ✅ Déploiement réussi sur K3d !
-        </div>
-        
-        <div class="info" style="margin-top: 30px;">
-            <p><strong>Pipeline CI/CD complet :</strong></p>
-            <p>Image construite → Importée dans K3d → Déployée via Ansible</p>
-            <p>Tout automatisé via <code>Makefile</code></p>
-        </div>
-        
-        <div class="footer">
-            <p>🔒 Rothschild & Co - Alternance Cybersécurité</p>
-            <p>📚 Formation Infrastructure as Code & Orchestration</p>
+
+        <div class="status-badge">
+            ✅ Nginx sur Kubernetes K3d
         </div>
     </div>
 </body>

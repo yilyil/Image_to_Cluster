@@ -284,7 +284,7 @@ kubectl port-forward svc/custom-nginx 3000:80
 
 **Objectif :** Compléter et documenter le README.md  
 
-Ce README a été conçu pour être **complet, pédagogique et professionnel**. Il inclut :
+Ce README inclut :
 
 - ✅ Présentation claire de l'atelier
 - ✅ Architecture visuelle

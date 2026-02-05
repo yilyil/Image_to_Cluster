@@ -9,11 +9,11 @@ CLUSTER_AGENTS := 2
 PORT := 8080
 SERVICE_PORT := 80
 
-# Couleurs pour l'affichage
+# Couleurs
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
 RED := \033[0;31m
-NC := \033[0m # No Color
+NC := \033[0m
 
 ##@ Aide
 
@@ -36,9 +36,9 @@ install-deps: ## Installe les dépendances manquantes (Packer, K3d, Ansible)
 	@echo "Installation de Packer..."
 	@if ! command -v packer &> /dev/null; then \
 		wget -q https://releases.hashicorp.com/packer/1.10.0/packer_1.10.0_linux_amd64.zip && \
-		unzip -q packer_*.zip && \
-		sudo mv packer /usr/local/bin/ && \
-		rm packer_*.zip && \
+		unzip -q packer_1.10.0_linux_amd64.zip -d /tmp/ && \
+		sudo mv /tmp/packer /usr/local/bin/ && \
+		rm -f packer_1.10.0_linux_amd64.zip && \
 		echo "✅ Packer installé"; \
 	else \
 		echo "✅ Packer déjà installé"; \
@@ -66,7 +66,7 @@ install-deps: ## Installe les dépendances manquantes (Packer, K3d, Ansible)
 
 create-cluster: ## Crée le cluster K3d (1 master + 2 workers)
 	@echo "$(GREEN)☸️  Création du cluster K3d...$(NC)"
-	@if k3d cluster list | grep -q "$(CLUSTER_NAME)"; then \
+	@if k3d cluster list 2>/dev/null | grep -q "$(CLUSTER_NAME)"; then \
 		echo "$(YELLOW)⚠️  Le cluster $(CLUSTER_NAME) existe déjà$(NC)"; \
 	else \
 		k3d cluster create $(CLUSTER_NAME) \
@@ -81,19 +81,34 @@ create-cluster: ## Crée le cluster K3d (1 master + 2 workers)
 
 delete-cluster: ## Supprime le cluster K3d
 	@echo "$(RED)🗑️  Suppression du cluster K3d...$(NC)"
-	@k3d cluster delete $(CLUSTER_NAME) || true
+	@k3d cluster delete $(CLUSTER_NAME) 2>/dev/null || true
 	@echo "$(GREEN)✅ Cluster supprimé$(NC)"
 
 ##@ Build et Import de l'Image
 
-build-image: ## Construit l'image Docker personnalisée avec Packer
-	@echo "$(GREEN)🐳 Build de l'image avec Packer...$(NC)"
-	@cd packer && \
-	packer init nginx.pkr.hcl && \
-	packer build \
-		-var "image_name=$(IMAGE_NAME)" \
-		-var "image_tag=$(IMAGE_TAG)" \
-		nginx.pkr.hcl
+build-image: ## Construit l'image Docker personnalisée avec Packer ou Docker
+	@echo "$(GREEN)🐳 Build de l'image...$(NC)"
+	@if command -v packer &> /dev/null; then \
+		cd packer && \
+		(packer init nginx.pkr.hcl 2>/dev/null || true) && \
+		packer build -var "image_name=$(IMAGE_NAME)" -var "image_tag=$(IMAGE_TAG)" nginx.pkr.hcl 2>/dev/null || \
+		(echo "$(YELLOW)⚠️ Packer a échoué, utilisation de Docker...$(NC)" && \
+		 cd .. && \
+		 docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -f - . << 'DOCKERFILE' \
+FROM nginx:alpine\
+COPY index.html /usr/share/nginx/html/index.html\
+EXPOSE 80\
+CMD ["nginx", "-g", "daemon off;"]\
+DOCKERFILE\
+		); \
+	else \
+		docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -f - . << 'DOCKERFILE' \
+FROM nginx:alpine\
+COPY index.html /usr/share/nginx/html/index.html\
+EXPOSE 80\
+CMD ["nginx", "-g", "daemon off;"]\
+DOCKERFILE\
+	fi
 	@echo ""
 	@echo "$(GREEN)✅ Image construite avec succès !$(NC)"
 	@echo ""
@@ -108,8 +123,7 @@ import-image: ## Importe l'image dans le cluster K3d
 
 deploy: ## Déploie l'application sur K3d avec Ansible
 	@echo "$(GREEN)🚀 Déploiement de l'application avec Ansible...$(NC)"
-	@cd ansible && \
-	ansible-playbook -i inventory.ini deploy.yml
+	@cd ansible && ansible-playbook -i inventory.ini deploy.yml
 	@echo ""
 	@echo "$(GREEN)=========================================="
 	@echo "✅ Déploiement terminé !"
@@ -123,7 +137,7 @@ undeploy: ## Supprime le déploiement de l'application
 
 ##@ Accès à l'Application
 
-forward-port: ## Forward le port pour accéder à l'application (Ctrl+C pour arrêter)
+forward-port: ## Forward le port pour accéder à l'application
 	@echo "$(GREEN)🌐 Forwarding du port $(PORT) vers le service...$(NC)"
 	@echo "$(YELLOW)💡 Dans GitHub Codespaces: Allez dans PORTS et rendez public le port $(PORT)$(NC)"
 	@echo "$(YELLOW)Press Ctrl+C to stop$(NC)"
@@ -151,14 +165,14 @@ status: ## Affiche l'état du cluster et de l'application
 
 clean: ## Nettoie tout (cluster + images Docker)
 	@echo "$(RED)🧹 Nettoyage complet...$(NC)"
-	@make undeploy || true
-	@make delete-cluster || true
+	@make undeploy 2>/dev/null || true
+	@make delete-cluster 2>/dev/null || true
 	@docker rmi $(IMAGE_NAME):$(IMAGE_TAG) 2>/dev/null || true
 	@echo "$(GREEN)✅ Nettoyage terminé$(NC)"
 
 ##@ Pipeline Complet
 
-all: install-deps create-cluster build-image import-image deploy status ## Pipeline complet: installation → création cluster → build → import → deploy
+all: install-deps create-cluster build-image import-image deploy status ## Pipeline complet automatique
 	@echo ""
 	@echo "$(GREEN)=========================================="
 	@echo "🎉 Pipeline complet terminé avec succès !"
@@ -166,7 +180,7 @@ all: install-deps create-cluster build-image import-image deploy status ## Pipel
 	@echo ""
 	@echo "$(YELLOW)Pour accéder à l'application:$(NC)"
 	@echo "1. Exécutez: make forward-port"
-	@echo "2. Dans GitHub Codespaces, allez dans l'onglet PORTS"
+	@echo "2. Dans GitHub Codespaces, allez dans PORTS"
 	@echo "3. Rendez public le port $(PORT)"
-	@echo "4. Cliquez sur l'URL pour accéder à l'application"
+	@echo "4. Cliquez sur l'URL"
 	@echo ""

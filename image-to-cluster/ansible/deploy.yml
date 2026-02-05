@@ -1,0 +1,122 @@
+---
+- name: Déploiement de l'application Nginx personnalisée sur K3d
+  hosts: local
+  gather_facts: true
+  become: false
+
+  vars:
+    image_name: "custom-nginx"
+    image_tag: "latest"
+    k8s_manifests_path: "../k8s"
+    cluster_name: "lab"
+
+  tasks:
+    - name: Vérification de la présence de kubectl
+      ansible.builtin.command: kubectl version --client
+      register: kubectl_check
+      changed_when: false
+      failed_when: kubectl_check.rc != 0
+
+    - name: Vérification de la connexion au cluster K3d
+      ansible.builtin.command: kubectl cluster-info
+      register: cluster_info
+      changed_when: false
+      failed_when: cluster_info.rc != 0
+
+    - name: Affichage des nœuds du cluster
+      ansible.builtin.command: kubectl get nodes
+      register: nodes_output
+      changed_when: false
+
+    - name: Debug - Affichage des nœuds
+      ansible.builtin.debug:
+        msg: "{{ nodes_output.stdout_lines }}"
+
+    - name: Vérification de l'image Docker localement
+      ansible.builtin.command: docker images {{ image_name }}:{{ image_tag }} --format "{{`{{.Repository}}:{{.Tag}}`}}"
+      register: image_check
+      changed_when: false
+      failed_when: image_check.stdout == ""
+
+    - name: Debug - Image trouvée
+      ansible.builtin.debug:
+        msg: "Image Docker trouvée : {{ image_check.stdout }}"
+
+    - name: Import de l'image dans K3d
+      ansible.builtin.command: k3d image import {{ image_name }}:{{ image_tag }} --cluster {{ cluster_name }}
+      register: import_result
+      changed_when: "'Imported' in import_result.stdout or 'imported' in import_result.stdout"
+
+    - name: Debug - Résultat de l'import
+      ansible.builtin.debug:
+        msg: "{{ import_result.stdout_lines }}"
+
+    - name: Suppression du déploiement existant (si présent)
+      ansible.builtin.command: kubectl delete deployment custom-nginx --ignore-not-found=true
+      register: delete_deployment
+      changed_when: "'deleted' in delete_deployment.stdout"
+
+    - name: Suppression du service existant (si présent)
+      ansible.builtin.command: kubectl delete service custom-nginx --ignore-not-found=true
+      register: delete_service
+      changed_when: "'deleted' in delete_service.stdout"
+
+    - name: Attente de la suppression complète
+      ansible.builtin.pause:
+        seconds: 5
+      when: delete_deployment.changed or delete_service.changed
+
+    - name: Application du manifeste Deployment
+      ansible.builtin.command: kubectl apply -f {{ k8s_manifests_path }}/deployment.yml
+      register: deployment_apply
+      changed_when: "'created' in deployment_apply.stdout or 'configured' in deployment_apply.stdout"
+
+    - name: Application du manifeste Service
+      ansible.builtin.command: kubectl apply -f {{ k8s_manifests_path }}/service.yml
+      register: service_apply
+      changed_when: "'created' in service_apply.stdout or 'configured' in service_apply.stdout"
+
+    - name: Attente du déploiement
+      ansible.builtin.command: kubectl rollout status deployment/custom-nginx --timeout=120s
+      register: rollout_status
+      changed_when: false
+
+    - name: Récupération des pods
+      ansible.builtin.command: kubectl get pods -l app=custom-nginx
+      register: pods_status
+      changed_when: false
+
+    - name: Debug - État des pods
+      ansible.builtin.debug:
+        msg: "{{ pods_status.stdout_lines }}"
+
+    - name: Récupération des services
+      ansible.builtin.command: kubectl get svc custom-nginx
+      register: service_status
+      changed_when: false
+
+    - name: Debug - État du service
+      ansible.builtin.debug:
+        msg: "{{ service_status.stdout_lines }}"
+
+    - name: Récupération de l'URL d'accès
+      ansible.builtin.command: kubectl get svc custom-nginx -o jsonpath='{.spec.ports[0].nodePort}'
+      register: node_port
+      changed_when: false
+
+    - name: Message de succès
+      ansible.builtin.debug:
+        msg:
+          - "=========================================="
+          - "✅ Déploiement réussi !"
+          - "=========================================="
+          - "Application accessible sur le port : {{ node_port.stdout }}"
+          - "Commande pour forwarder le port :"
+          - "kubectl port-forward svc/custom-nginx 8080:80"
+          - ""
+          - "Dans GitHub Codespaces :"
+          - "1. Exécutez : kubectl port-forward svc/custom-nginx 8080:80"
+          - "2. Allez dans l'onglet PORTS"
+          - "3. Rendez public le port 8080"
+          - "4. Cliquez sur l'URL pour accéder à l'application"
+          - "=========================================="

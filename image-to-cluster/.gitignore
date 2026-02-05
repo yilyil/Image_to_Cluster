@@ -1,0 +1,27 @@
+# Packer
+packer/packer_cache/
+*.box
+
+# Ansible
+ansible/*.retry
+ansible/.ansible/
+
+# Logs
+*.log
+/tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform (si utilisé plus tard)
+.terraform/
+*.tfstate
+*.tfstate.backup

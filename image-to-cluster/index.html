@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atelier Image to Cluster - Yilizire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px;
+            max-width: 800px;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 10px 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .tech-stack {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .tech-item {
+            background: #f7f7f7;
+            padding: 15px 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .success {
+            color: #27ae60;
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        code {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Atelier Image to Cluster</h1>
+        
+        <div class="badge">EFREI Paris - M2 Security & Networks</div>
+        <div class="badge">Yilizire - 2026</div>
+        
+        <div class="info">
+            <p><strong>Objectif atteint !</strong></p>
+            <p>Cette application Nginx personnalisée a été déployée avec succès sur un cluster K3d en utilisant une approche Infrastructure as Code.</p>
+        </div>
+        
+        <div class="tech-stack">
+            <div class="tech-item">
+                <strong>🐳 Packer</strong><br>
+                <small>Build d'image Docker</small>
+            </div>
+            <div class="tech-item">
+                <strong>🔧 Ansible</strong><br>
+                <small>Déploiement automatisé</small>
+            </div>
+            <div class="tech-item">
+                <strong>☸️ K3d</strong><br>
+                <small>Cluster Kubernetes</small>
+            </div>
+            <div class="tech-item">
+                <strong>📦 GitHub Codespaces</strong><br>
+                <small>Environnement dev</small>
+            </div>
+        </div>
+        
+        <div class="success">
+            ✅ Déploiement réussi sur K3d !
+        </div>
+        
+        <div class="info" style="margin-top: 30px;">
+            <p><strong>Pipeline CI/CD complet :</strong></p>
+            <p>Image construite → Importée dans K3d → Déployée via Ansible</p>
+            <p>Tout automatisé via <code>Makefile</code></p>
+        </div>
+        
+        <div class="footer">
+            <p>🔒 Rothschild & Co - Alternance Cybersécurité</p>
+            <p>📚 Formation Infrastructure as Code & Orchestration</p>
+        </div>
+    </div>
+</body>
+</html>

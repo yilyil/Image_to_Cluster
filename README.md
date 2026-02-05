@@ -4,24 +4,6 @@
 
 **Auteur:** Yilizire Xiaohereti
 ---
-
-## 📋 Table des matières
-
-- [Présentation de l'atelier](#-présentation-de-latelier)
-- [Architecture](#-architecture)
-- [Prérequis](#-prérequis)
-- [Séquence 1 : Création du Codespace GitHub](#-séquence-1--création-du-codespace-github)
-- [Séquence 2 : Création du cluster K3d](#-séquence-2--création-du-cluster-k3d)
-- [Séquence 3 : Exercice principal](#-séquence-3--exercice-principal)
-- [Séquence 4 : Documentation](#-séquence-4--documentation)
-- [Installation automatisée](#-installation-automatisée)
-- [Guide d'utilisation détaillé](#-guide-dutilisation-détaillé)
-- [Commandes disponibles](#-commandes-disponibles)
-- [Dépannage](#-dépannage)
-- [Structure du projet](#-structure-du-projet)
-
----
-
 ## 🎯 Présentation de l'atelier
 
 ### L'idée en 30 secondes

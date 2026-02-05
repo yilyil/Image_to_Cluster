@@ -53,8 +53,8 @@ L'objectif est de comprendre comment des outils d'Infrastructure as Code permett
 │  │              │      │    Image     │      │  Cluster  │  │
 │  │ nginx.pkr.hcl│      │ custom-nginx │      │           │  │
 │  └──────────────┘      └──────────────┘      └─────┬─────┘  │
-│                                                     │       │
-│                        ┌────────────────────────────┘       │
+│                                                    │        │
+│                        ┌───────────────────────────┘        │
 │                        │                                    │
 │                        ▼                                    │
 │              ┌──────────────────┐                           │

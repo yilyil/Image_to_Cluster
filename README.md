@@ -46,17 +46,17 @@ L'objectif est de comprendre comment des outils d'Infrastructure as Code permett
 ### Architecture cible
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    GitHub Codespaces                         │
-│                                                              │
-│  ┌──────────────┐      ┌──────────────┐      ┌───────────┐ │
-│  │    Packer    │─────▶│    Docker    │─────▶│    K3d    │ │
-│  │              │      │    Image     │      │  Cluster  │ │
-│  │ nginx.pkr.hcl│      │ custom-nginx │      │           │ │
-│  └──────────────┘      └──────────────┘      └─────┬─────┘ │
-│                                                     │        │
-│                        ┌────────────────────────────┘        │
-│                        │                                     │
-│                        ▼                                     │
+│                    GitHub Codespaces                        │
+│                                                             │
+│  ┌──────────────┐      ┌──────────────┐      ┌───────────┐  │
+│  │    Packer    │─────▶│    Docker    │─────▶│    K3d    │  │
+│  │              │      │    Image     │      │  Cluster  │  │
+│  │ nginx.pkr.hcl│      │ custom-nginx │      │           │  │
+│  └──────────────┘      └──────────────┘      └─────┬─────┘  │
+│                                                     │       │
+│                        ┌────────────────────────────┘       │
+│                        │                                    │
+│                        ▼                                    │
 │              ┌──────────────────┐                           │
 │              │     Ansible      │                           │
 │              │   deploy.yml     │                           │
@@ -65,12 +65,12 @@ L'objectif est de comprendre comment des outils d'Infrastructure as Code permett
 │              │  - Service       │                           │
 │              │  - Port Forward  │                           │
 │              └──────────────────┘                           │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
                          │
                          ▼
               ┌──────────────────┐
-              │  Application Web  │
+              │  Application Web │
               │   Nginx Custom   │
               │   Port 8080      │
               └──────────────────┘

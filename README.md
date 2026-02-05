@@ -1,9 +1,7 @@
 # 🚀 Atelier Image to Cluster
 
-**Auteur:** Yilizire  
-**Formation:** M2 Security & Networks - EFREI Paris  
+**Auteur:** Yilizire Xiaohereti
 **Date:** Février 2026  
-**Contexte:** Alternance Rothschild & Co - Module Orchestration Kubernetes
 
 ---
 

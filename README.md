@@ -1,8 +1,6 @@
 # 🚀 Atelier Image to Cluster
 
 **Auteur:** Yilizire Xiaohereti
-**Date:** Février 2026  
-
 ---
 
 ## 📋 Table des matières
